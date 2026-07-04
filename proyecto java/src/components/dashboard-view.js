@@ -17,28 +17,28 @@ export class DashboardView extends HTMLElement {
   render() {
     const user = SessionService.current();
     this.innerHTML = `
-      <div class="app-shell">
-        <header class="header">
-          <div>
-            <h1>Acme Planta Macondo</h1>
-            <p>Bienvenido, ${user.name} · ${user.role}</p>
+      <div class="app-shell dashboard-shell">
+        <aside class="sidebar">
+          <div class="brand">
+            <h1>Acme</h1>
+            <p>Planta Macondo</p>
           </div>
-          <nav>
+          <nav class="sidebar-nav">
             <button data-section="users">Usuarios</button>
             <button data-section="inventory">Inventario</button>
             <button data-section="production">Producción</button>
             <button data-section="report">Inventarios</button>
             <button class="secondary" id="logoutButton">Cerrar sesión</button>
           </nav>
-        </header>
+        </aside>
         <main class="main-content">
+          <header class="header">
+            <div>
+              <h2>Bienvenido, ${user.name}</h2>
+              <p class="small">${user.role}</p>
+            </div>
+          </header>
           <section class="panel" id="sectionContainer"></section>
-          <aside class="panel">
-            <h2>Indicaciones rápidas</h2>
-            <p class="small">Registre usuarios antes de trabajar. Cree materias primas, productos terminados y use el módulo de producción para transformar inventario en productos listos.</p>
-            <div class="section-title"><span class="tag">Nota</span></div>
-            <p class="small">Cada proceso genera un código consecutivo y reduce la materia prima acorde con la fórmula definida.</p>
-          </aside>
         </main>
       </div>
     `;
