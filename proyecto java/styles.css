@@ -1,0 +1,114 @@
+:root {
+  --bg: #0f0f12;
+  --surface: #121117;
+  --primary: #1f0937;
+  --secondary: #7c3aed;
+  --accent: #b084fc;
+  --text: #f3f0ff;
+  --muted: #a6a1b8;
+  --danger: #d946ef;
+  --radius: 18px;
+  font-size: 16px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: radial-gradient(circle at top left, rgba(124, 58, 237, 0.16), transparent 32%), linear-gradient(180deg, #0b0812 0%, #16121f 100%);
+  color: var(--text);
+}
+
+button, input, select, textarea { font: inherit; }
+button { cursor: pointer; }
+
+#app { min-height: 100vh; padding: 24px; }
+
+.app-shell {
+  max-width: 1300px;
+  margin: 0 auto;
+  background: rgba(255,255,255,0.92);
+  border-radius: var(--radius);
+  box-shadow: 0 24px 80px rgba(17,40,75,0.12);
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 32px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+}
+
+.header h1, .header p { margin: 0; }
+.header nav { display: flex; flex-wrap: wrap; gap: 10px; }
+.header nav button {
+  border: none;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.18);
+  color: white;
+}
+
+.main-content {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  padding: 32px;
+}
+
+.panel {
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: 0 8px 24px rgba(15,23,42,0.08);
+  padding: 24px;
+}
+
+.panel h2 { margin-top: 0; }
+.form-grid { display: grid; gap: 16px; }
+.input-group { display: grid; gap: 8px; }
+label { font-size: 0.95rem; color: var(--muted); }
+input, select, textarea {
+  width: 100%;
+  border: 1px solid #d8dde8;
+  border-radius: 14px;
+  padding: 12px 14px;
+  background: #f8fafe;
+  color: var(--text);
+}
+textarea { resize: vertical; min-height: 80px; }
+button.primary { border: none; color: white; background: var(--primary); padding: 14px 18px; border-radius: 14px; }
+button.secondary { border: 1px solid #cbd5e1; background: white; color: var(--text); padding: 10px 14px; border-radius: 14px; }
+button.danger { background: var(--danger); color: white; padding: 10px 14px; border-radius: 14px; }
+.table-wrapper { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 10px; text-align: left; border-bottom: 1px solid #eef2f6; }
+th { color: var(--muted); font-size: 0.9rem; }
+tr:hover { background: rgba(21,101,192,0.05); }
+.badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 999px; font-size: 0.85rem; background: #e8f0fe; color: #1e3a8a; }
+.alert { border-radius: 16px; padding: 16px; background: rgba(255,193,7,0.12); color: #5f370e; }
+.hidden { display: none !important; }
+.flex { display: flex; gap: 16px; flex-wrap: wrap; }
+.small { font-size: 0.88rem; color: var(--muted); }
+.login-shell { max-width: 1000px; margin: 0 auto; border-radius: var(--radius); overflow: hidden; display: grid; grid-template-columns: 1.2fr 1fr; box-shadow: 0 24px 80px rgba(0,0,0,0.30); }
+.login-panel { padding: 40px 48px; background: rgba(18,17,23,0.95); color: var(--text); }
+.login-intro { padding: 40px 48px; background: linear-gradient(180deg, #1b0732 0%, #52057b 100%); color: white; display: flex; flex-direction: column; justify-content: center; }
+.login-intro h1 { margin: 0 0 14px; }
+.login-intro p { margin: 0; line-height: 1.6; }
+.login-panel h2 { margin: 0 0 24px; }
+.login-panel .form-grid { gap: 18px; }
+.login-panel button { width: 100%; }
+.section-title { margin: 0 0 18px; }
+.tag { display: inline-block; background: #dff2f4; color: #0b4f5d; padding: 6px 10px; border-radius: 999px; font-size: 0.85rem; }
+
+@media (max-width: 1080px) { .main-content { grid-template-columns: 1fr; } }
+@media (max-width: 720px) {
+  #app { padding: 12px; }
+  .header { flex-direction: column; align-items: stretch; }
+  .header nav { justify-content: space-between; }
+  .login-shell { grid-template-columns: 1fr; }
+}
