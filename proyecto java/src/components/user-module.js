@@ -8,66 +8,39 @@ export class UserModule extends HTMLElement {
 
   connectedCallback() {
     this.render();
-    this.bindEvents();
   }
 
   async render() {
     const users = await UserService.list();
-    this.innerHTML = `
-      <h2>Gestión de usuarios</h2>
-      <div class="form-grid">
-        <div class="input-group">
-          <label for="userId">Número de identificación</label>
-          <input id="userId" type="text" placeholder="12345678" />
-        </div>
-        <div class="input-group">
-          <label for="userName">Nombre completo</label>
-          <input id="userName" type="text" placeholder="Ana Fernández" />
-        </div>
-        <div class="input-group">
-          <label for="userRole">Cargo</label>
-          <input id="userRole" type="text" placeholder="Coordinador" />
-        </div>
-        <div class="input-group">
-          <label for="userPassword">Contraseña</label>
-          <input id="userPassword" type="password" placeholder="******" />
-        </div>
-        <div class="input-group">
-          <label for="confirmPassword">Confirmar contraseña</label>
-          <input id="confirmPassword" type="password" placeholder="******" />
-        </div>
-        <div class="flex">
-          <button class="primary" id="saveUser">Guardar usuario</button>
-          <button class="secondary hidden" id="cancelEdit">Cancelar edición</button>
-        </div>
-      </div>
-      <div class="table-wrapper" style="margin-top:24px;">
-        <table>
-          <thead><tr><th>ID</th><th>Nombre</th><th>Cargo</th><th>Acciones</th></tr></thead>
-          <tbody>
-            ${users.map((user) => `
-              <tr>
-                <td>${user.id}</td>
-                <td>${user.name}</td>
-                <td>${user.role}</td>
-                <td>
-                  <button class="secondary edit" data-id="${user.id}">Editar</button>
-                  <button class="danger delete" data-id="${user.id}">Eliminar</button>
-                </td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
+    const template = document.querySelector("#user-module-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
+
+    // Populate table
+    const tbody = this.querySelector("#userTableBody");
+    tbody.innerHTML = users.map((user) => `
+      <tr>
+        <td>${user.id}</td>
+        <td>${user.name}</td>
+        <td>${user.role}</td>
+        <td>
+          <button class="secondary edit" data-id="${user.id}">Editar</button>
+          <button class="danger delete" data-id="${user.id}">Eliminar</button>
+        </td>
+      </tr>
+    `).join("");
+
     this.bindEvents();
   }
 
   bindEvents() {
-    this.querySelector("#saveUser").addEventListener("click", () => this.handleSave());
-    this.querySelector("#cancelEdit").addEventListener("click", () => this.cancelEdit());
-    this.querySelectorAll("button.edit").forEach((button) => button.addEventListener("click", () => this.startEdit(button.dataset.id)));
-    this.querySelectorAll("button.delete").forEach((button) => button.addEventListener("click", () => this.removeUser(button.dataset.id)));
+    this.addEventListener("click", (e) => {
+      if (e.target.id === "saveUser") this.handleSave();
+      else if (e.target.id === "cancelEdit") this.cancelEdit();
+      else if (e.target.classList.contains("edit")) this.startEdit(e.target.dataset.id);
+      else if (e.target.classList.contains("delete")) this.removeUser(e.target.dataset.id);
+    });
   }
 
   async handleSave() {
@@ -123,6 +96,7 @@ export class UserModule extends HTMLElement {
     if (!user) return;
     this.editedId = id;
     this.querySelector("#userId").value = user.id;
+    this.querySelector("#userId").disabled = true;
     this.querySelector("#userName").value = user.name;
     this.querySelector("#userRole").value = user.role;
     this.querySelector("#userPassword").value = "";
@@ -133,6 +107,7 @@ export class UserModule extends HTMLElement {
   cancelEdit() {
     this.editedId = null;
     this.querySelector("#userId").value = "";
+    this.querySelector("#userId").disabled = false;
     this.querySelector("#userName").value = "";
     this.querySelector("#userRole").value = "";
     this.querySelector("#userPassword").value = "";

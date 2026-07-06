@@ -1,5 +1,7 @@
 const DATABASE_URL = "https://stock-flow-99bba-default-rtdb.firebaseio.com";
 
+
+
 async function requestJson(path, options = {}) {
   const response = await fetch(`${DATABASE_URL}/${path}.json`, {
     headers: { "Content-Type": "application/json" },
@@ -86,7 +88,14 @@ export class UserService {
 
 export class ProductService {
   static async list() {
-    return readCollection("products");
+    const products = await readCollection("products");
+
+    if (products.length > 0) {
+      return products;
+    }
+
+    await writeCollection("products", DEFAULT_PRODUCTS, (item) => item.code);
+    return DEFAULT_PRODUCTS;
   }
 
   static async find(code) {
@@ -114,6 +123,12 @@ export class ProductService {
       return product;
     });
     await writeCollection("products", updated, (item) => item.code);
+  }
+
+  static async remove(code) {
+    const products = await ProductService.list();
+    const filtered = products.filter((product) => product.code !== code);
+    await writeCollection("products", filtered, (item) => item.code);
   }
 }
 

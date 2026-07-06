@@ -4,6 +4,8 @@ export class InventoryModule extends HTMLElement {
   constructor() {
     super();
     this.formula = [];
+    this.editingCode = null;
+    this.editingProduct = null;
   }
 
   connectedCallback() {
@@ -12,157 +14,142 @@ export class InventoryModule extends HTMLElement {
 
   async render() {
     const products = await ProductService.list();
-    const rawMaterials = products.filter((product) => product.type === "raw");
+    const template = document.querySelector("#inventory-module-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
 
-    this.innerHTML = `
-      <h2>Inventario y productos</h2>
-      <div class="panel" style="margin-bottom:24px;">
-        <h3>Registrar producto</h3>
-        <div class="form-grid" style="margin-top:16px;">
-          <div class="input-group">
-            <label for="productCode">Código</label>
-            <input id="productCode" type="text" placeholder="PR-001" />
-          </div>
-          <div class="input-group">
-            <label for="productName">Nombre del producto</label>
-            <input id="productName" type="text" placeholder="Harina" />
-          </div>
-          <div class="input-group">
-            <label for="productProvider">Proveedor</label>
-            <input id="productProvider" type="text" placeholder="Molinos Macondo" />
-          </div>
-          <div class="input-group">
-            <label for="productType">Tipo</label>
-            <select id="productType">
-              <option value="raw">Materia prima</option>
-              <option value="finished">Producto terminado</option>
-            </select>
-          </div>
-          <div class="input-group">
-            <label for="productStock">Cantidad en stock</label>
-            <input id="productStock" type="number" min="0" placeholder="0" />
-          </div>
-        </div>
-        <div class="panel" id="formulaPanel" style="margin-top:20px; padding:20px; background: rgba(255,255,255,0.02); border-radius: var(--panel-radius);">
-          <h3>Fórmula de producción</h3>
-          <p class="small">Agregue las materias primas necesarias para fabricar este producto terminado.</p>
-          <div class="flex" style="align-items:flex-end; gap:12px; flex-wrap:wrap; margin-top:16px;">
-            <div class="input-group" style="flex:1; min-width:140px;">
-              <label for="formulaCode">Materia prima</label>
-              <select id="formulaCode">
-                <option value="">Seleccione</option>
-                ${rawMaterials.map((product) => `<option value="${product.code}">${product.name} (${product.code})</option>`).join("")}
-              </select>
-            </div>
-            <div class="input-group" style="width:140px;">
-              <label for="formulaQty">Cantidad</label>
-              <input id="formulaQty" type="number" min="1" placeholder="100" />
-            </div>
-            <button class="secondary" id="addIngredient">Agregar ingrediente</button>
-          </div>
-          <div id="formulaList" style="margin-top:14px;">
-            ${this.formula.length === 0 ? `<p class="small">No hay ingredientes agregados.</p>` : ""}
-            <ul>
-              ${this.formula.map((item, index) => `<li>${item.code}: ${item.quantity} unidad(es) <button class="secondary remove-ingredient" data-index="${index}">Quitar</button></li>`).join("")}
-            </ul>
-          </div>
-        </div>
-        <div class="flex" style="margin-top: 14px; gap: 12px; flex-wrap:wrap;">
-          <button class="primary" id="saveProduct">Guardar producto</button>
-        </div>
-      </div>
-      <div class="table-wrapper" style="margin-top:24px;">
-        <table>
-          <thead><tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th>Tipo</th><th>Stock</th></tr></thead>
-          <tbody>
-            ${products.map((product) => `
-              <tr>
-                <td>${product.code}</td>
-                <td>${product.name}</td>
-                <td>${product.provider}</td>
-                <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
-                <td>${product.stock}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-    this.bindEvents();
-    this.updateFormulaVisibility();
-  }
 
-  bindEvents() {
-    this.querySelector("#productType").addEventListener("change", () => this.updateFormulaVisibility());
-    this.querySelector("#addIngredient").addEventListener("click", () => this.addIngredient());
-    this.querySelector("#saveProduct").addEventListener("click", () => this.saveProduct());
-    this.querySelectorAll("button.remove-ingredient").forEach((button) => button.addEventListener("click", () => this.removeIngredient(Number(button.dataset.index))));
-  }
+    const title = this.querySelector("#inventoryTitle");
+    title.textContent = this.editingCode ? "Editar producto" : "Registrar producto";
 
-  updateFormulaVisibility() {
-    const panel = this.querySelector("#formulaPanel");
-    const type = this.querySelector("#productType").value;
-    panel.style.display = type === "finished" ? "block" : "none";
-  }
-
-  addIngredient() {
-    const code = this.querySelector("#formulaCode").value;
-    const quantity = Number(this.querySelector("#formulaQty").value);
-    if (!code || quantity <= 0) {
-      alert("Seleccione materia prima y una cantidad válida.");
-      return;
+    if (this.editingCode && this.editingProduct) {
+      const product = this.editingProduct;
+      this.querySelector("#productCode").value = product.code;
+      this.querySelector("#productCode").disabled = true;
+      this.querySelector("#productName").value = product.name;
+      this.querySelector("#productProvider").value = product.provider;
+      this.querySelector("#productType").value = product.type;
+      this.querySelector("#productStock").value = product.stock;
+      this.querySelector("#saveProduct").textContent = "Actualizar producto";
+      this.querySelector("#cancelEdit").classList.remove("hidden");
     }
 
-    const existing = this.formula.find((item) => item.code === code);
-    if (existing) {
-      existing.quantity += quantity;
-    } else {
-      this.formula.push({ code, quantity });
-    }
 
-    this.render();
+    const tbody = this.querySelector("#productTableBody");
+    tbody.innerHTML = products.map((product) => `
+      <tr>
+        <td>${product.code}</td>
+        <td>${product.name}</td>
+        <td>${product.provider}</td>
+        <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
+        <td>${product.stock}</td>
+        <td style="display: flex; gap: 8px;">
+          <button class="edit-btn" data-code="${product.code}">Editar</button>
+          <button class="delete-btn" data-code="${product.code}">Eliminar</button>
+        </td>
+      </tr>
+    `).join("");
+
+    this.addEventListener("click", (e) => this.handleClick(e));
+    this.addEventListener("change", (e) => this.handleChange(e));
   }
 
-  removeIngredient(index) {
-    this.formula.splice(index, 1);
-    this.render();
+  handleChange(e) {
+    if (e.target.id === "productType") {
+    }
+  }
+
+  handleClick(e) {
+    const target = e.target;
+
+    if (target.id === "saveProduct") {
+      this.saveProduct();
+    } else if (target.id === "cancelEdit") {
+      this.cancelEdit();
+    } else if (target.classList.contains("edit-btn")) {
+      const code = target.dataset.code;
+      this.loadProductToEdit(code);
+    } else if (target.classList.contains("delete-btn")) {
+      const code = target.dataset.code;
+      this.deleteProduct(code);
+    }
   }
 
   async saveProduct() {
-    const code = this.querySelector("#productCode").value.trim();
-    const name = this.querySelector("#productName").value.trim();
-    const provider = this.querySelector("#productProvider").value.trim();
-    const type = this.querySelector("#productType").value;
+    const codeInput = this.querySelector("#productCode");
+    const nameInput = this.querySelector("#productName");
+    const providerInput = this.querySelector("#productProvider");
+    const typeSelect = this.querySelector("#productType");
+    const stockInput = this.querySelector("#productStock");
 
-    const stock = Number(this.querySelector("#productStock").value);
+    const code = codeInput.value.trim();
+    const name = nameInput.value.trim();
+    const provider = providerInput.value.trim();
+    const type = typeSelect.value;
+    const stock = Number(stockInput.value);
 
     if (!code || !name || !provider || Number.isNaN(stock)) {
       alert("Complete los datos del producto y la cantidad de stock.");
       return;
     }
 
-    if (await ProductService.find(code)) {
+    if (!this.editingCode && await ProductService.find(code)) {
       alert("Ya existe un producto con ese código.");
       return;
     }
 
-    if (type === "finished" && this.formula.length === 0) {
-      alert("Agregue al menos un ingrediente para la fórmula.");
-      return;
-    }
-
-    await ProductService.add({
+    const productData = {
       code,
       name,
       provider,
       type,
       stock: Math.max(0, stock),
-      formula: type === "finished" ? this.formula : [],
-    });
+      formula: this.formula,
+    };
+
+    if (this.editingCode) {
+      await ProductService.update(code, productData);
+      alert("Producto actualizado correctamente.");
+    } else {
+      await ProductService.add(productData);
+      alert("Producto creado correctamente.");
+    }
 
     this.formula = [];
+    this.editingCode = null;
+    this.editingProduct = null;
     this.render();
-    alert("Producto creado correctamente.");
+  }
+
+  async loadProductToEdit(code) {
+    const product = await ProductService.find(code);
+    if (!product) {
+      alert("Producto no encontrado.");
+      return;
+    }
+
+    this.editingCode = code;
+    this.editingProduct = product;
+    this.formula = product.formula || [];
+    this.render();
+  }
+
+  cancelEdit() {
+    this.editingCode = null;
+    this.editingProduct = null;
+    this.formula = [];
+    this.render();
+  }
+
+  async deleteProduct(code) {
+    if (!confirm(`¿Está seguro de que desea eliminar el producto ${code}?`)) {
+      return;
+    }
+
+    await ProductService.remove(code);
+    this.render();
+    alert("Producto eliminado correctamente.");
   }
 }
 

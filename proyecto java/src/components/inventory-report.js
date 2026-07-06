@@ -12,6 +12,22 @@ export class InventoryReport extends HTMLElement {
 
   async render() {
     const products = await ProductService.list();
+    const template = document.querySelector("#inventory-report-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
+
+    const searchInput = this.querySelector("#searchInventory");
+    searchInput.value = this.filter;
+    searchInput.addEventListener("input", (event) => {
+      this.filter = event.target.value;
+      this.updateTable(products);
+    });
+
+    this.updateTable(products);
+  }
+
+  updateTable(products) {
     const filtered = products.filter((product) => {
       const search = this.filter.toLowerCase();
       return (
@@ -22,38 +38,17 @@ export class InventoryReport extends HTMLElement {
       );
     });
 
-    this.innerHTML = `
-      <h2>Módulo de inventarios</h2>
-      <div class="input-group">
-        <label for="searchInventory">Buscar producto</label>
-        <input id="searchInventory" type="search" placeholder="Filtrar por nombre, código o proveedor" value="${this.filter}" />
-      </div>
-      <div class="table-wrapper" style="margin-top:16px;">
-        <table>
-          <thead><tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th>Tipo</th><th>Stock</th><th>Fórmula</th></tr></thead>
-          <tbody>
-            ${filtered.map((product) => `
-              <tr>
-                <td>${product.code}</td>
-                <td>${product.name}</td>
-                <td>${product.provider}</td>
-                <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
-                <td>${product.stock}</td>
-                <td>${product.type === "finished" ? product.formula.map((item) => `${item.quantity}×${item.code}`).join(", ") : "-"}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      </div>
-    `;
-    this.bindEvents();
-  }
-
-  bindEvents() {
-    this.querySelector("#searchInventory").addEventListener("input", (event) => {
-      this.filter = event.target.value;
-      this.render();
-    });
+    const tbody = this.querySelector("#reportTableBody");
+    tbody.innerHTML = filtered.map((product) => `
+      <tr>
+        <td>${product.code}</td>
+        <td>${product.name}</td>
+        <td>${product.provider}</td>
+        <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
+        <td>${product.stock}</td>
+        <td>${product.type === "finished" ? product.formula.map((item) => `${item.quantity}×${item.code}`).join(", ") : "-"}</td>
+      </tr>
+    `).join("");
   }
 }
 

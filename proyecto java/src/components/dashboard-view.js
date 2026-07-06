@@ -16,38 +16,23 @@ export class DashboardView extends HTMLElement {
 
   render() {
     const user = SessionService.current();
-    this.innerHTML = `
-      <div class="app-shell dashboard-shell">
-        <aside class="sidebar">
-          <div class="brand">
-            <h1>Acme</h1>
-            <p>Planta Macondo</p>
-          </div>
-          <nav class="sidebar-nav">
-            <button data-section="users">Usuarios</button>
-            <button data-section="inventory">Inventario</button>
-            <button data-section="production">Producción</button>
-            <button data-section="report">Inventarios</button>
-            <button class="secondary" id="logoutButton">Cerrar sesión</button>
-          </nav>
-        </aside>
-        <main class="main-content">
-          <header class="header">
-            <div>
-              <h2>Bienvenido, ${user.name}</h2>
-              <p class="small">${user.role}</p>
-            </div>
-          </header>
-          <section class="panel" id="sectionContainer"></section>
-        </main>
-      </div>
-    `;
+    const template = document.querySelector("#dashboard-view-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
+
+  
+    this.querySelector("#welcomeHeader").textContent = `Bienvenido, ${user.name}`;
+    this.querySelector("#userRoleHeader").textContent = user.role;
+
+
     this.querySelectorAll("nav button[data-section]").forEach((button) => {
       button.addEventListener("click", () => {
         this.currentSection = button.dataset.section;
         this.renderSection();
       });
     });
+
     this.querySelector("#logoutButton").addEventListener("click", () => this.logout());
     this.renderSection();
   }

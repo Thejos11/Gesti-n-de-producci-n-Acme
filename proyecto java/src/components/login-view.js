@@ -3,60 +3,14 @@ import { HashService, SessionService, UserService } from "../services/app-store.
 export class LoginView extends HTMLElement {
   connectedCallback() {
     this.render();
-    this.bindEvents();
   }
 
   render() {
-    this.innerHTML = `
-      <div class="login-shell">
-        <div class="login-intro">
-          <h1>Acme Planta Macondo</h1>
-          <p>Gestione usuarios, materias primas, inventarios y procesos de producción desde un solo tablero.</p>
-        </div>
-        <div class="login-panel">
-          <h2>Acceso al sistema</h2>
-          <div class="form-grid">
-            <div class="input-group">
-              <label for="loginId">Número de identificación</label>
-              <input id="loginId" type="text" placeholder="12345678" />
-            </div>
-            <div class="input-group">
-              <label for="loginPassword">Contraseña</label>
-              <input id="loginPassword" type="password" placeholder="********" />
-            </div>
-            <button class="primary" id="loginButton">Iniciar sesión</button>
-            <div class="alert hidden" id="loginMessage"></div>
-          </div>
-          <div style="margin-top: 32px;">
-            <h2>Registrar nuevo usuario</h2>
-            <div class="form-grid">
-              <div class="input-group">
-                <label for="registerId">Número de identificación</label>
-                <input id="registerId" type="text" placeholder="12345678" />
-              </div>
-              <div class="input-group">
-                <label for="registerName">Nombre completo</label>
-                <input id="registerName" type="text" placeholder="María Pacheco" />
-              </div>
-              <div class="input-group">
-                <label for="registerRole">Cargo</label>
-                <input id="registerRole" type="text" placeholder="Administrador" />
-              </div>
-              <div class="input-group">
-                <label for="registerPassword">Contraseña</label>
-                <input id="registerPassword" type="password" placeholder="******" />
-              </div>
-              <div class="input-group">
-                <label for="registerPassword2">Repetir contraseña</label>
-                <input id="registerPassword2" type="password" placeholder="******" />
-              </div>
-              <button class="secondary" id="registerButton">Registrar usuario</button>
-              <div class="alert hidden" id="registerMessage"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    `;
+    const template = document.querySelector("#login-view-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
+    this.bindEvents();
   }
 
   bindEvents() {

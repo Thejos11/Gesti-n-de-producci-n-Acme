@@ -16,46 +16,31 @@ export class ProductionModule extends HTMLElement {
     const finished = products.filter((product) => product.type === "finished");
     const processes = (await ProductionService.list()).sort((a, b) => Number(b.code || 0) - Number(a.code || 0));
 
-    this.innerHTML = `
-      <h2>Módulo de producción</h2>
-      <div class="form-grid">
-        <div class="input-group">
-          <label for="productToMake">Producto a fabricar</label>
-          <select id="productToMake">
-            <option value="">Seleccione</option>
-            ${finished.map((product) => `<option value="${product.code}">${product.name} (${product.code})</option>`).join("")}
-          </select>
-        </div>
-        <div class="input-group">
-          <label for="produceQuantity">Cantidad a fabricar</label>
-          <input id="produceQuantity" type="number" min="1" placeholder="10" />
-        </div>
-        <button class="primary" id="produceButton">Generar producción</button>
-      </div>
-      ${this.message ? `<div class="alert" style="margin-top:16px;">${this.message}</div>` : ""}
-      <div class="panel" style="margin-top:24px;">
-        <h3>Resumen de producción</h3>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr><th>Código</th><th>Producto</th><th>Cantidad</th><th>Materia prima usada</th></tr></thead>
-            <tbody>
-              ${processes.map((process) => `
-                <tr>
-                  <td>${process.code}</td>
-                  <td>${process.productName}</td>
-                  <td>${process.quantity}</td>
-                  <td>${process.ingredients.map((ingredient) => `${ingredient.code}: ${ingredient.used}`).join("; ")}</td>
-                </tr>
-              `).join("")}
-            </tbody>
-          </table>
-        </div>
-      </div>
-    `;
-    this.bindEvents();
-  }
+    const template = document.querySelector("#production-module-template");
+    const clone = template.content.cloneNode(true);
+    this.innerHTML = "";
+    this.appendChild(clone);
 
-  bindEvents() {
+
+    const select = this.querySelector("#productToMake");
+    select.innerHTML = '<option value="">Seleccione</option>' + 
+      finished.map((product) => `<option value="${product.code}">${product.name} (${product.code})</option>`).join("");
+
+    const messageDiv = this.querySelector("#productionMessage");
+    if (this.message) {
+      messageDiv.innerHTML = `<div class="alert" style="margin-top:16px;">${this.message}</div>`;
+    }
+
+    const tbody = this.querySelector("#productionTableBody");
+    tbody.innerHTML = processes.map((process) => `
+      <tr>
+        <td>${process.code}</td>
+        <td>${process.productName}</td>
+        <td>${process.quantity}</td>
+        <td>${process.ingredients.map((ingredient) => `${ingredient.code}: ${ingredient.used}`).join("; ")}</td>
+      </tr>
+    `).join("");
+
     this.querySelector("#produceButton").addEventListener("click", () => this.runProduction());
   }
 
@@ -88,6 +73,7 @@ export class ProductionModule extends HTMLElement {
       this.render();
       return;
     }
+
     for (const item of requirements) {
       await ProductService.adjustStock(item.code, -item.required);
     }
