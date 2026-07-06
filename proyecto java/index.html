@@ -73,6 +73,7 @@
             <button data-section="users">Usuarios</button>
             <button data-section="inventory">Inventario</button>
             <button data-section="production">Producción</button>
+            <button data-section="recipes">Recetas</button>
             <button data-section="report">Inventarios</button>
             <button class="secondary" id="logoutButton">Cerrar sesión</button>
           </nav>
@@ -157,6 +158,12 @@
               <input id="productStock" type="number" min="0" placeholder="0" />
             </div>
           </div>
+          <div id="recipeSection" class="panel" style="margin-top:16px; display:none;">
+            <h3>Receta del producto</h3>
+            <p style="margin:0 0 8px;">Agregue los ingredientes que se consumirán al fabricar este producto.</p>
+            <div id="recipeRows"></div>
+            <button type="button" class="secondary" id="addRecipeIngredient" style="margin-top:8px;">Agregar ingrediente</button>
+          </div>
           <div class="flex" style="margin-top: 14px; gap: 12px; flex-wrap:wrap;">
             <button class="primary" id="saveProduct">Guardar producto</button>
             <button class="secondary hidden" id="cancelEdit">Cancelar edición</button>
@@ -189,6 +196,8 @@
           <button class="primary" id="produceButton">Generar producción</button>
         </div>
         <div id="productionMessage"></div>
+        <div id="selectedRecipe" style="margin-top:16px;"></div>
+        <div id="producedResult" style="margin-top:16px;"></div>
         <div class="panel" style="margin-top:24px;">
           <h3>Resumen de producción</h3>
           <div class="table-wrapper">
@@ -215,6 +224,18 @@
             <thead><tr><th>Código</th><th>Nombre</th><th>Proveedor</th><th>Tipo</th><th>Stock</th><th>Fórmula</th></tr></thead>
             <tbody id="reportTableBody">
             </tbody>
+          </table>
+        </div>
+      </div>
+    </template>
+
+    <template id="recipe-module-template">
+      <div>
+        <h2>Recetas de productos terminados</h2>
+        <div class="table-wrapper" style="margin-top:16px;">
+          <table>
+            <thead><tr><th>Código</th><th>Producto</th><th>Receta</th></tr></thead>
+            <tbody id="recipeTableBody"></tbody>
           </table>
         </div>
       </div>

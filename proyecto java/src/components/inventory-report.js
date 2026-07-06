@@ -39,16 +39,22 @@ export class InventoryReport extends HTMLElement {
     });
 
     const tbody = this.querySelector("#reportTableBody");
-    tbody.innerHTML = filtered.map((product) => `
-      <tr>
-        <td>${product.code}</td>
-        <td>${product.name}</td>
-        <td>${product.provider}</td>
-        <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
-        <td>${product.stock}</td>
-        <td>${product.type === "finished" ? product.formula.map((item) => `${item.quantity}×${item.code}`).join(", ") : "-"}</td>
-      </tr>
-    `).join("");
+    tbody.innerHTML = filtered.map((product) => {
+      const recetaStr = product.type === "finished" && product.receta
+        ? Object.entries(product.receta).map(([code, qty]) => `${qty}×${code}`).join(", ")
+        : "-";
+      
+      return `
+        <tr>
+          <td>${product.code}</td>
+          <td>${product.name}</td>
+          <td>${product.provider}</td>
+          <td>${product.type === "raw" ? "Materia prima" : "Terminado"}</td>
+          <td>${product.stock}</td>
+          <td>${recetaStr}</td>
+        </tr>
+      `;
+    }).join("");
   }
 }
 

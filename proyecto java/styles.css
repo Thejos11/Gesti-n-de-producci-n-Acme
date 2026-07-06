@@ -201,9 +201,6 @@ tr:hover {
   font-size: 0.88rem; 
   color: var(--muted); 
 }
-
-
-
 .login-shell {
   max-width: 1000px;
   margin: 0 auto;
@@ -226,11 +223,17 @@ tr:hover {
   flex-direction: column;
   justify-content: center;
 }
-.login-intro h1 { margin: 0 0 14px; }
-.login-intro p { margin: 0; line-height: 1.6; }
-.login-panel h2 { margin: 0 0 24px; }
-.login-panel .form-grid { gap: 18px; }
-.login-panel button { width: 100%; }
+.login-intro h1 { 
+  margin: 0 0 14px; }
+.login-intro p { 
+  margin: 0; 
+  line-height: 1.6; }
+.login-panel h2 { 
+  margin: 0 0 24px; }
+.login-panel .form-grid { 
+  gap: 18px; }
+.login-panel button { 
+  width: 100%; }
 
 .section-title { margin: 0 0 18px; }
 .tag { display: inline-block; 
@@ -257,8 +260,6 @@ tr:hover {
   .header { padding: 20px 20px 0; }
   .login-shell { grid-template-columns: 1fr; }
 }
-
-.dashboard-shell { }
 
 input[disabled] {
   opacity: 0.6;

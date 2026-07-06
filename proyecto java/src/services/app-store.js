@@ -1,6 +1,43 @@
 const DATABASE_URL = "https://stock-flow-99bba-default-rtdb.firebaseio.com";
 
-
+const DEFAULT_PRODUCTS = [
+  {
+    code: "harina",
+    name: "Harina",
+    provider: "Acme Corp",
+    type: "raw",
+    stock: 500,
+    receta: {}
+  },
+  {
+    code: "mantequilla",
+    name: "Mantequilla",
+    provider: "Acme Corp",
+    type: "raw",
+    stock: 400,
+    receta: {}
+  },
+  {
+    code: "huevo",
+    name: "Huevo",
+    provider: "Acme Corp",
+    type: "raw",
+    stock: 200,
+    receta: {}
+  },
+  {
+    code: "COD_001",
+    name: "Galleta Chocolate",
+    provider: "Acme Corp",
+    stock: 50,
+    type: "finished",
+    receta: {
+      "harina": 100,
+      "mantequilla": 100,
+      "huevo": 1
+    }
+  }
+];
 
 async function requestJson(path, options = {}) {
   const response = await fetch(`${DATABASE_URL}/${path}.json`, {
@@ -152,7 +189,13 @@ export class ProductionService {
 
 export class SessionService {
   static current() {
-    return JSON.parse(localStorage.getItem("acme_session") || "null");
+    try {
+      return JSON.parse(localStorage.getItem("acme_session") || "null");
+    } catch (error) {
+      console.warn("Sesión inválida en localStorage, se restablece.", error);
+      localStorage.removeItem("acme_session");
+      return null;
+    }
   }
 
   static set(user) {

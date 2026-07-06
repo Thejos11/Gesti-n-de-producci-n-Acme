@@ -3,9 +3,10 @@ import { ProductService } from "../services/app-store.js";
 export class InventoryModule extends HTMLElement {
   constructor() {
     super();
-    this.formula = [];
+    this.receta = {};
     this.editingCode = null;
     this.editingProduct = null;
+    this.recetaEntries = [];
   }
 
   connectedCallback() {
@@ -18,7 +19,6 @@ export class InventoryModule extends HTMLElement {
     const clone = template.content.cloneNode(true);
     this.innerHTML = "";
     this.appendChild(clone);
-
 
     const title = this.querySelector("#inventoryTitle");
     title.textContent = this.editingCode ? "Editar producto" : "Registrar producto";
@@ -33,8 +33,15 @@ export class InventoryModule extends HTMLElement {
       this.querySelector("#productStock").value = product.stock;
       this.querySelector("#saveProduct").textContent = "Actualizar producto";
       this.querySelector("#cancelEdit").classList.remove("hidden");
+      this.receta = product.receta || {};
+      this.recetaEntries = Object.entries(this.receta).map(([code, qty]) => ({ code, qty }));
+    } else {
+      this.receta = {};
+      this.recetaEntries = [];
     }
 
+    this.renderRecipeSection();
+    this.toggleRecipeSection();
 
     const tbody = this.querySelector("#productTableBody");
     tbody.innerHTML = products.map((product) => `
@@ -55,8 +62,65 @@ export class InventoryModule extends HTMLElement {
     this.addEventListener("change", (e) => this.handleChange(e));
   }
 
+  toggleRecipeSection() {
+    const typeSelect = this.querySelector("#productType");
+    const recipeSection = this.querySelector("#recipeSection");
+
+    if (!typeSelect || !recipeSection) {
+      return;
+    }
+
+    recipeSection.style.display = typeSelect.value === "finished" ? "block" : "none";
+  }
+
+  renderRecipeSection() {
+    const recipeRows = this.querySelector("#recipeRows");
+    if (!recipeRows) {
+      return;
+    }
+
+    if (this.recetaEntries.length === 0) {
+      recipeRows.innerHTML = '<p style="margin:0;">Agregue los ingredientes que consume esta receta.</p>';
+      return;
+    }
+
+    recipeRows.innerHTML = this.recetaEntries.map((entry, index) => `
+      <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px; flex-wrap:wrap;">
+        <input class="recipe-code" data-index="${index}" value="${entry.code || ""}" placeholder="Código materia prima" />
+        <input class="recipe-qty" data-index="${index}" type="number" min="1" value="${entry.qty ?? 1}" placeholder="Cantidad" />
+        <button type="button" class="secondary remove-recipe-btn" data-index="${index}">Quitar</button>
+      </div>
+    `).join("");
+  }
+
+  addRecipeIngredient() {
+    this.recetaEntries = [...this.recetaEntries, { code: "", qty: 1 }];
+    this.renderRecipeSection();
+  }
+
+  removeRecipeIngredient(index) {
+    this.recetaEntries = this.recetaEntries.filter((_, currentIndex) => currentIndex !== index);
+    this.renderRecipeSection();
+  }
+
   handleChange(e) {
     if (e.target.id === "productType") {
+      this.toggleRecipeSection();
+      return;
+    }
+
+    if (e.target.classList.contains("recipe-code")) {
+      const index = Number(e.target.dataset.index);
+      this.recetaEntries = this.recetaEntries.map((entry, currentIndex) => 
+        currentIndex === index ? { ...entry, code: e.target.value.trim() } : entry
+      );
+    }
+
+    if (e.target.classList.contains("recipe-qty")) {
+      const index = Number(e.target.dataset.index);
+      this.recetaEntries = this.recetaEntries.map((entry, currentIndex) => 
+        currentIndex === index ? { ...entry, qty: Number(e.target.value) || 1 } : entry
+      );
     }
   }
 
@@ -67,6 +131,10 @@ export class InventoryModule extends HTMLElement {
       this.saveProduct();
     } else if (target.id === "cancelEdit") {
       this.cancelEdit();
+    } else if (target.id === "addRecipeIngredient") {
+      this.addRecipeIngredient();
+    } else if (target.classList.contains("remove-recipe-btn")) {
+      this.removeRecipeIngredient(Number(target.dataset.index));
     } else if (target.classList.contains("edit-btn")) {
       const code = target.dataset.code;
       this.loadProductToEdit(code);
@@ -99,13 +167,24 @@ export class InventoryModule extends HTMLElement {
       return;
     }
 
+    const receta = Object.fromEntries(
+      this.recetaEntries
+        .filter((entry) => entry.code && Number(entry.qty) > 0)
+        .map((entry) => [entry.code, Number(entry.qty)])
+    );
+
+    if (type === "finished" && Object.keys(receta).length === 0) {
+      alert("Defina al menos un ingrediente en la receta del producto terminado.");
+      return;
+    }
+
     const productData = {
       code,
       name,
       provider,
       type,
       stock: Math.max(0, stock),
-      formula: this.formula,
+      receta,
     };
 
     if (this.editingCode) {
@@ -116,7 +195,8 @@ export class InventoryModule extends HTMLElement {
       alert("Producto creado correctamente.");
     }
 
-    this.formula = [];
+    this.receta = {};
+    this.recetaEntries = [];
     this.editingCode = null;
     this.editingProduct = null;
     this.render();
@@ -131,14 +211,16 @@ export class InventoryModule extends HTMLElement {
 
     this.editingCode = code;
     this.editingProduct = product;
-    this.formula = product.formula || [];
+    this.receta = product.receta || {};
+    this.recetaEntries = Object.entries(this.receta).map(([code, qty]) => ({ code, qty }));
     this.render();
   }
 
   cancelEdit() {
     this.editingCode = null;
     this.editingProduct = null;
-    this.formula = [];
+    this.receta = {};
+    this.recetaEntries = [];
     this.render();
   }
 
@@ -152,5 +234,4 @@ export class InventoryModule extends HTMLElement {
     alert("Producto eliminado correctamente.");
   }
 }
-
 customElements.define("inventory-module", InventoryModule);

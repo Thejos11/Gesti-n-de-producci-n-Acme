@@ -3,6 +3,7 @@ import "./user-module.js";
 import "./inventory-module.js";
 import "./inventory-report.js";
 import "./production-module.js";
+import "./recipe-module.js";
 
 export class DashboardView extends HTMLElement {
   constructor() {
@@ -45,6 +46,9 @@ export class DashboardView extends HTMLElement {
         break;
       case "production":
         container.innerHTML = "<production-module></production-module>";
+        break;
+      case "recipes":
+        container.innerHTML = "<recipe-module></recipe-module>";
         break;
       case "report":
         container.innerHTML = "<inventory-report></inventory-report>";
